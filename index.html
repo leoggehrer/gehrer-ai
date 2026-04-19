@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI-Bird — Gerhard Gehrer</title>
+
+<style>
+:root {
+  /* light */
+  --bg: oklch(98.5% 0.005 230);
+  --bg-2: oklch(96% 0.008 220);
+  --ink: oklch(18% 0.02 240);
+  --ink-2: oklch(38% 0.02 240);
+  --ink-3: oklch(60% 0.015 235);
+  --line: oklch(88% 0.012 230);
+  --accent: oklch(72% 0.10 195);     /* cool mint/aqua */
+  --accent-ink: oklch(28% 0.07 200);
+  --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Courier New", monospace;
+  --maxw: 1280px;
+}
+html[data-theme="dark"] {
+  --bg: oklch(16% 0.012 240);
+  --bg-2: oklch(20% 0.015 240);
+  --ink: oklch(96% 0.01 230);
+  --ink-2: oklch(78% 0.012 230);
+  --ink-3: oklch(58% 0.012 230);
+  --line: oklch(28% 0.015 240);
+  --accent: oklch(78% 0.11 195);
+  --accent-ink: oklch(96% 0.01 230);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.55;
+  letter-spacing: -0.005em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background 0.4s ease, color 0.4s ease;
+}
+::selection { background: var(--accent); color: var(--accent-ink); }
+
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 clamp(20px, 4vw, 56px); }
+
+/* ─────────── NAV ─────────── */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  backdrop-filter: blur(14px);
+  background: color-mix(in oklab, var(--bg) 78%, transparent);
+  border-bottom: 1px solid var(--line);
+}
+.nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 0;
+}
+.brand {
+  display: flex; align-items: center; gap: 12px;
+  font-family: var(--serif); font-size: 22px; letter-spacing: -0.01em;
+}
+.brand-mark {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--ink);
+  position: relative; overflow: hidden;
+}
+.brand-mark::after {
+  content: ""; position: absolute; inset: 0;
+  background: var(--accent);
+  clip-path: polygon(0 50%, 100% 50%, 100% 100%, 0 100%);
+}
+.nav-links {
+  display: flex; gap: 28px; align-items: center;
+  font-size: 14px; color: var(--ink-2);
+}
+.nav-links a { transition: color .2s; }
+.nav-links a:hover { color: var(--ink); }
+.nav-tools { display: flex; gap: 8px; align-items: center; }
+.icon-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--line); background: transparent;
+  color: var(--ink-2); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  transition: background .2s, color .2s, border-color .2s;
+}
+.icon-btn:hover { background: var(--bg-2); color: var(--ink); border-color: var(--ink-3); }
+
+/* ─────────── HERO ─────────── */
+.hero { padding: clamp(60px, 10vw, 140px) 0 clamp(80px, 12vw, 160px); }
+.hero-meta {
+  display: flex; gap: 14px; align-items: center;
+  font-family: var(--mono); font-size: 12px; color: var(--ink-3);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 36px;
+}
+.dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px color-mix(in oklab, var(--accent) 25%, transparent); }
+.hero h1 {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(48px, 9.5vw, 148px);
+  line-height: 0.95; letter-spacing: -0.035em;
+  margin: 0 0 40px; color: var(--ink);
+  text-wrap: balance;
+  font-feature-settings: "liga", "kern";
+}
+.hero h1 em { font-style: italic; color: var(--ink-2); }
+.hero h1 .accent { color: var(--accent-ink); border-bottom: 2px solid var(--accent); }
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: clamp(40px, 8vw, 96px);
+  align-items: end;
+  margin-top: 24px;
+}
+.hero-lede {
+  font-size: clamp(17px, 1.4vw, 20px);
+  line-height: 1.5; color: var(--ink-2);
+  max-width: 52ch; text-wrap: pretty;
+}
+.hero-side {
+  font-family: var(--mono); font-size: 12px; color: var(--ink-3);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  border-top: 1px solid var(--line); padding-top: 18px;
+}
+.hero-side .row { display: flex; justify-content: space-between; padding: 6px 0; }
+.hero-side .row span:last-child { color: var(--ink); font-family: var(--sans); text-transform: none; letter-spacing: 0; font-size: 13px; }
+
+/* ─────────── SECTIONS ─────────── */
+section { padding: clamp(70px, 10vw, 130px) 0; border-top: 1px solid var(--line); }
+.eyebrow {
+  display: flex; gap: 12px; align-items: center;
+  font-family: var(--mono); font-size: 12px; color: var(--ink-3);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 48px;
+}
+.eyebrow::before {
+  content: ""; width: 28px; height: 1px; background: var(--ink-3);
+}
+.section-title {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(36px, 5vw, 64px);
+  line-height: 1.05; letter-spacing: -0.02em;
+  margin: 0 0 56px; max-width: 18ch;
+  text-wrap: balance;
+}
+
+/* ─────────── ABOUT ─────────── */
+.about-grid {
+  display: grid; grid-template-columns: 1fr 1.3fr;
+  gap: clamp(40px, 6vw, 88px); align-items: start;
+}
+.portrait {
+  aspect-ratio: 4/5; width: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  position: relative; overflow: hidden;
+  border-radius: 2px;
+}
+.portrait::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0 14px,
+    color-mix(in oklab, var(--ink-3) 12%, transparent) 14px 15px
+  );
+}
+.portrait::after {
+  content: "[ portrait ]";
+  position: absolute; bottom: 16px; left: 16px;
+  font-family: var(--mono); font-size: 11px; color: var(--ink-3);
+  background: var(--bg); padding: 4px 8px; border: 1px solid var(--line);
+}
+.about-text p {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(20px, 1.8vw, 26px);
+  line-height: 1.45; letter-spacing: -0.01em;
+  color: var(--ink); margin: 0 0 1em;
+  text-wrap: pretty;
+}
+.about-text p + p { color: var(--ink-2); }
+.about-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 24px; margin-top: 56px;
+  padding-top: 32px; border-top: 1px solid var(--line);
+}
+.stat .num {
+  font-family: var(--serif); font-size: clamp(36px, 4vw, 52px);
+  line-height: 1; letter-spacing: -0.02em;
+  color: var(--ink); margin-bottom: 8px;
+}
+.stat .lbl {
+  font-family: var(--mono); font-size: 11px; color: var(--ink-3);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+
+/* ─────────── SERVICES ─────────── */
+.services-list { display: grid; gap: 0; }
+.service {
+  display: grid;
+  grid-template-columns: 80px 1fr 2fr auto;
+  gap: clamp(20px, 4vw, 56px);
+  align-items: start;
+  padding: 36px 0;
+  border-top: 1px solid var(--line);
+  transition: padding .35s ease;
+  cursor: default;
+}
+.service:last-child { border-bottom: 1px solid var(--line); }
+.service:hover { padding-left: 16px; padding-right: 16px; }
+.service:hover .svc-arrow { transform: translateX(6px); color: var(--ink); }
+.svc-num {
+  font-family: var(--mono); font-size: 12px; color: var(--ink-3);
+  letter-spacing: 0.05em; padding-top: 8px;
+}
+.svc-title {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(26px, 3vw, 38px);
+  line-height: 1.1; letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.svc-desc {
+  font-size: 15px; line-height: 1.55; color: var(--ink-2);
+  max-width: 52ch; text-wrap: pretty;
+  padding-top: 8px;
+}
+.svc-tags {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px;
+}
+.tag {
+  font-family: var(--mono); font-size: 10px; color: var(--ink-3);
+  border: 1px solid var(--line); padding: 4px 8px; border-radius: 999px;
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.svc-arrow {
+  font-family: var(--serif); font-size: 28px; color: var(--ink-3);
+  padding-top: 4px;
+  transition: transform .35s ease, color .25s ease;
+}
+
+/* ─────────── CONTACT ─────────── */
+.contact { padding-bottom: clamp(80px, 10vw, 140px); }
+.contact-grid {
+  display: grid; grid-template-columns: 1.5fr 1fr;
+  gap: clamp(40px, 6vw, 88px); align-items: end;
+}
+.contact-headline {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(44px, 7vw, 96px);
+  line-height: 1; letter-spacing: -0.025em;
+  margin: 0 0 40px;
+  text-wrap: balance;
+}
+.contact-headline em { font-style: italic; color: var(--ink-2); }
+.cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 24px;
+  font-size: 14px; font-weight: 500; letter-spacing: -0.005em;
+  border-radius: 999px; cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s, transform .2s;
+  border: 1px solid var(--line);
+  background: transparent; color: var(--ink);
+}
+.btn:hover { transform: translateY(-1px); }
+.btn-primary {
+  background: var(--ink); color: var(--bg); border-color: var(--ink);
+}
+.btn-primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); color: var(--bg); }
+.btn-ghost:hover { background: var(--bg-2); border-color: var(--ink-3); }
+.btn .arr { transition: transform .25s; }
+.btn:hover .arr { transform: translate(2px, -2px); }
+
+.contact-meta {
+  font-family: var(--mono); font-size: 12px; color: var(--ink-3);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  border-top: 1px solid var(--line); padding-top: 18px;
+}
+.contact-meta .row { display: flex; justify-content: space-between; padding: 8px 0; }
+.contact-meta .row a { color: var(--ink); font-family: var(--sans); text-transform: none; letter-spacing: 0; font-size: 14px; transition: color .2s; }
+.contact-meta .row a:hover { color: var(--accent-ink); }
+
+/* ─────────── FOOTER ─────────── */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 32px 0;
+  font-family: var(--mono); font-size: 11px; color: var(--ink-3);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+
+/* ─────────── RESPONSIVE ─────────── */
+@media (max-width: 820px) {
+  .nav-links { display: none; }
+  .hero-grid, .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 40px; }
+  .service { grid-template-columns: 40px 1fr; }
+  .svc-desc { grid-column: 1 / -1; padding-top: 0; }
+  .svc-arrow { display: none; }
+  .about-stats { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- =================== NAV =================== -->
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a href="#top" class="brand">
+      <span class="brand-mark"></span>
+      <span data-i18n="brand">AI-Bird</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#about" data-i18n="nav.about">About</a>
+      <a href="#services" data-i18n="nav.services">Leistungen</a>
+      <a href="#contact" data-i18n="nav.contact">Kontakt</a>
+    </nav>
+    <div class="nav-tools">
+      <button class="icon-btn" id="lang-toggle" title="Sprache wechseln">DE</button>
+      <button class="icon-btn" id="theme-toggle" title="Theme wechseln" aria-label="theme">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- =================== HERO =================== -->
+<section class="hero" id="top" style="border-top: none;">
+  <div class="wrap">
+    <div class="hero-meta">
+      <span class="dot"></span>
+      <span data-i18n="hero.meta">Verfügbar für neue Projekte — Q3 / 2026</span>
+    </div>
+    <h1>
+      <span data-i18n="hero.line1">Ich baue</span> <em data-i18n="hero.line2">intelligente</em><br>
+      <span data-i18n="hero.line3">Software &amp; lehre,</span><br>
+      <span data-i18n="hero.line4">wie</span> <span class="accent" data-i18n="hero.line5">KI funktioniert.</span>
+    </h1>
+
+    <div class="hero-grid">
+      <p class="hero-lede" data-i18n="hero.lede">
+        Hi, ich bin Gerhard Gehrer — Entwickler, Trainer und Berater an der Schnittstelle von Künstlicher Intelligenz und Software­engineering. Ich baue Systeme, die in Produktion laufen, und schule Teams, die sie verstehen wollen.
+      </p>
+      <div class="hero-side">
+        <div class="row"><span data-i18n="side.role">Rolle</span><span data-i18n="side.role.v">KI-Trainer &amp; Engineer</span></div>
+        <div class="row"><span data-i18n="side.based">Sitz</span><span data-i18n="side.based.v">Linz · Remote</span></div>
+        <div class="row"><span data-i18n="side.since">Seit</span><span>2000</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== ABOUT =================== -->
+<section id="about">
+  <div class="wrap">
+    <div class="eyebrow"><span data-i18n="about.eyebrow">Über mich · 01</span></div>
+
+    <div class="about-grid">
+      <div class="portrait" aria-hidden="true"></div>
+      <div class="about-text">
+        <p data-i18n="about.p1">
+          Seit über zwanzig Jahren arbeite ich an Software, die wirklich gebraucht wird — vom kleinen Tool bis zu komplexen KI-Pipelines. Was mich antreibt: das Handwerk dahinter zugänglich machen.
+        </p>
+        <p data-i18n="about.p2">
+          In Workshops, Trainings und Mandaten begleite ich Teams dabei, KI nicht als Buzzword, sondern als verlässliche Produktivkraft zu nutzen. Praxisnah, ehrlich, und mit echtem Code.
+        </p>
+        <div class="about-stats">
+          <div class="stat"><div class="num">120<span style="color:var(--accent-ink)">+</span></div><div class="lbl" data-i18n="stat.1">Trainings gehalten</div></div>
+          <div class="stat"><div class="num">40<span style="color:var(--accent-ink)">+</span></div><div class="lbl" data-i18n="stat.2">Software-Systeme</div></div>
+          <div class="stat"><div class="num">20</div><div class="lbl" data-i18n="stat.3">Jahre Erfahrung</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== SERVICES =================== -->
+<section id="services">
+  <div class="wrap">
+    <div class="eyebrow"><span data-i18n="svc.eyebrow">Leistungen · 02</span></div>
+    <h2 class="section-title" data-i18n="svc.title">Zwei Wege, mit mir zu arbeiten.</h2>
+
+    <div class="services-list">
+      <div class="service">
+        <div class="svc-num">01 / KI</div>
+        <div>
+          <div class="svc-title" data-i18n="svc.1.title">KI-Schulungen &amp; Workshops</div>
+          <div class="svc-tags">
+            <span class="tag">LLMs</span><span class="tag">RAG</span><span class="tag">Prompting</span><span class="tag">Hands-On</span>
+          </div>
+        </div>
+        <div class="svc-desc" data-i18n="svc.1.desc">
+          Praxisorientierte Trainings — von Grundlagen bis Production-Deployment. Maßgeschneidert für Engineering-Teams, Product-Crews oder Führungskräfte. Kein Folien-Marathon, sondern echtes Verständnis.
+        </div>
+        <div class="svc-arrow">↗</div>
+      </div>
+
+      <div class="service">
+        <div class="svc-num">02 / DEV</div>
+        <div>
+          <div class="svc-title" data-i18n="svc.2.title">Software-Entwicklung &amp; Beratung</div>
+          <div class="svc-tags">
+            <span class="tag">Web</span><span class="tag">Backend</span><span class="tag">AI Integration</span><span class="tag">MVPs</span>
+          </div>
+        </div>
+        <div class="svc-desc" data-i18n="svc.2.desc">
+          Vom ersten Prototyp bis zum produktiven System. Ich entwickle Software, die hält — sauber, wartbar und mit dem richtigen Maß an KI-Integration. Allein oder mit deinem Team.
+        </div>
+        <div class="svc-arrow">↗</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== CONTACT =================== -->
+<section id="contact" class="contact">
+  <div class="wrap">
+    <div class="eyebrow"><span data-i18n="ct.eyebrow">Kontakt · 03</span></div>
+    <h2 class="contact-headline">
+      <span data-i18n="ct.line1">Lass uns</span> <em data-i18n="ct.line2">reden.</em>
+    </h2>
+
+    <div class="contact-grid">
+      <div>
+        <p style="font-size:18px;color:var(--ink-2);max-width:46ch;margin:0 0 32px;text-wrap:pretty;" data-i18n="ct.lede">
+          Du planst ein Training, brauchst Sparring zu einer KI-Idee oder hast ein Projekt im Kopf? Schreib mir — ich antworte meist innerhalb eines Werktags.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="mailto:hallo@beispiel.at">
+            <span data-i18n="ct.cta1">Projekt anfragen</span>
+            <span class="arr">→</span>
+          </a>
+          <a class="btn btn-ghost" href="#">
+            <span data-i18n="ct.cta2">Kalender öffnen</span>
+            <span class="arr">↗</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="contact-meta">
+        <div class="row"><span data-i18n="ct.email">E-Mail</span><a href="mailto:hallo@beispiel.at">hallo@beispiel.at</a></div>
+        <div class="row"><span>LinkedIn</span><a href="#">/in/dein-handle</a></div>
+        <div class="row"><span>GitHub</span><a href="#">@dein-handle</a></div>
+        <div class="row"><span data-i18n="ct.loc">Ort</span><a href="#">Wien, AT</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =================== FOOTER =================== -->
+<footer>
+  <div class="wrap" style="display:flex;justify-content:space-between;width:100%;gap:16px;flex-wrap:wrap;">
+    <span data-i18n="ft.copy">© 2026 — AI-Bird. Alle Rechte vorbehalten.</span>
+    <span><a href="#" data-i18n="ft.imprint">Impressum</a> · <a href="#" data-i18n="ft.privacy">Datenschutz</a></span>
+  </div>
+</footer>
+
+<script>
+/* ── Theme toggle ── */
+const themeBtn = document.getElementById('theme-toggle');
+const root = document.documentElement;
+const savedTheme = localStorage.getItem('lp-theme') || 'light';
+root.dataset.theme = savedTheme;
+themeBtn.addEventListener('click', () => {
+  const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+  root.dataset.theme = next;
+  localStorage.setItem('lp-theme', next);
+});
+
+/* ── Language toggle ── */
+const i18n = {
+  de: {
+    "brand": "AI-Bird",
+    "nav.about": "About", "nav.services": "Leistungen", "nav.contact": "Kontakt",
+    "hero.meta": "Verfügbar für neue Projekte — Q3 / 2026",
+    "hero.line1": "Ich baue", "hero.line2": "intelligente",
+    "hero.line3": "Software & lehre,", "hero.line4": "wie", "hero.line5": "KI funktioniert.",
+    "hero.lede": "Hi, ich bin Gerhard Gehrer — Entwickler, Trainer und Berater an der Schnittstelle von Künstlicher Intelligenz und Software\u00adengineerung. Ich baue Systeme, die in Produktion laufen, und schule Teams, die sie verstehen wollen.",
+    "side.role": "Rolle", "side.role.v": "KI-Trainer & Engineer",
+    "side.based": "Sitz", "side.based.v": "Linz · Remote",
+    "side.since": "Seit",
+    "about.eyebrow": "Über mich · 01",
+    "about.p1": "Seit über zwanzig Jahren arbeite ich an Software, die wirklich gebraucht wird — vom kleinen Tool bis zu komplexen KI-Pipelines. Was mich antreibt: das Handwerk dahinter zugänglich machen.",
+    "about.p2": "In Workshops, Trainings und Mandaten begleite ich Teams dabei, KI nicht als Buzzword, sondern als verlässliche Produktivkraft zu nutzen. Praxisnah, ehrlich, und mit echtem Code.",
+    "stat.1": "Trainings gehalten", "stat.2": "Software-Systeme", "stat.3": "Jahre Erfahrung",
+    "svc.eyebrow": "Leistungen · 02",
+    "svc.title": "Zwei Wege, mit mir zu arbeiten.",
+    "svc.1.title": "KI-Schulungen & Workshops",
+    "svc.1.desc": "Praxisorientierte Trainings — von Grundlagen bis Production-Deployment. Maßgeschneidert für Engineering-Teams, Product-Crews oder Führungskräfte. Kein Folien-Marathon, sondern echtes Verständnis.",
+    "svc.2.title": "Software-Entwicklung & Beratung",
+    "svc.2.desc": "Vom ersten Prototyp bis zum produktiven System. Ich entwickle Software, die hält — sauber, wartbar und mit dem richtigen Maß an KI-Integration. Allein oder mit deinem Team.",
+    "ct.eyebrow": "Kontakt · 03",
+    "ct.line1": "Lass uns", "ct.line2": "reden.",
+    "ct.lede": "Du planst ein Training, brauchst Sparring zu einer KI-Idee oder hast ein Projekt im Kopf? Schreib mir — ich antworte meist innerhalb eines Werktags.",
+    "ct.cta1": "Projekt anfragen", "ct.cta2": "Kalender öffnen",
+    "ct.email": "E-Mail", "ct.loc": "Ort",
+    "ft.copy": "© 2026 — AI-Bird. Alle Rechte vorbehalten.",
+    "ft.imprint": "Impressum", "ft.privacy": "Datenschutz"
+  },
+  en: {
+    "brand": "AI-Bird",
+    "nav.about": "About", "nav.services": "Services", "nav.contact": "Contact",
+    "hero.meta": "Available for new projects — Q3 / 2026",
+    "hero.line1": "I build", "hero.line2": "intelligent",
+    "hero.line3": "software & teach", "hero.line4": "how", "hero.line5": "AI works.",
+    "hero.lede": "Hi, I'm Gerhard Gehrer — engineer, trainer and consultant at the intersection of AI and software engineering. I build systems that run in production and train the teams that need to understand them.",
+    "side.role": "Role", "side.role.v": "AI Trainer & Engineer",
+    "side.based": "Based", "side.based.v": "Linz · Remote",
+    "side.since": "Since",
+    "about.eyebrow": "About · 01",
+    "about.p1": "For over twenty years I've shipped software that's actually needed — from small tools to complex AI pipelines. What drives me: making the craft behind it accessible.",
+    "about.p2": "In workshops, trainings and engagements I help teams use AI not as a buzzword but as a reliable productive force. Hands-on, honest, with real code.",
+    "stat.1": "Trainings delivered", "stat.2": "Software systems", "stat.3": "Years of experience",
+    "svc.eyebrow": "Services · 02",
+    "svc.title": "Two ways to work with me.",
+    "svc.1.title": "AI Trainings & Workshops",
+    "svc.1.desc": "Hands-on trainings — from fundamentals to production deployment. Tailored for engineering teams, product crews, or leadership. No slide marathon, just real understanding.",
+    "svc.2.title": "Software development & consulting",
+    "svc.2.desc": "From first prototype to production system. I build software that lasts — clean, maintainable, with the right amount of AI integration. Solo or with your team.",
+    "ct.eyebrow": "Contact · 03",
+    "ct.line1": "Let's", "ct.line2": "talk.",
+    "ct.lede": "Planning a training, need sparring on an AI idea, or have a project in mind? Drop me a line — I usually reply within one business day.",
+    "ct.cta1": "Start a project", "ct.cta2": "Open calendar",
+    "ct.email": "Email", "ct.loc": "Location",
+    "ft.copy": "© 2026 — AI-Bird. All rights reserved.",
+    "ft.imprint": "Imprint", "ft.privacy": "Privacy"
+  }
+};
+const langBtn = document.getElementById('lang-toggle');
+let lang = localStorage.getItem('lp-lang') || 'de';
+function applyLang(l) {
+  lang = l;
+  document.documentElement.lang = l;
+  langBtn.textContent = l === 'de' ? 'EN' : 'DE';
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (i18n[l] && i18n[l][key]) el.textContent = i18n[l][key];
+  });
+  localStorage.setItem('lp-lang', l);
+}
+langBtn.addEventListener('click', () => applyLang(lang === 'de' ? 'en' : 'de'));
+applyLang(lang);
+</script>
+
+</body>
+</html>
