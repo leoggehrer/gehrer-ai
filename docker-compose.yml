@@ -4,10 +4,40 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network=shared_proxy_net
-      - traefik.http.routers.landing.rule=Host(`gehrer-ai.com`) || Host(`www.gehrer-ai.com`)
+
+      # HTTPS router for canonical host
+      - traefik.http.routers.landing.rule=Host(`gehrer-ai.com`)
+      - traefik.http.routers.landing.entrypoints=websecure
       - traefik.http.routers.landing.tls=true
-      - traefik.http.routers.landing.entrypoints=web,websecure
       - traefik.http.routers.landing.tls.certresolver=mytlschallenge
+      - traefik.http.routers.landing.tls.domains[0].main=gehrer-ai.com
+      - traefik.http.routers.landing.tls.domains[0].sans=www.gehrer-ai.com
+
+      # Redirect HTTP -> HTTPS for canonical host
+      - traefik.http.routers.landing-http.rule=Host(`gehrer-ai.com`)
+      - traefik.http.routers.landing-http.entrypoints=web
+      - traefik.http.routers.landing-http.middlewares=landing-https-redirect
+      - traefik.http.middlewares.landing-https-redirect.redirectscheme.scheme=https
+      - traefik.http.middlewares.landing-https-redirect.redirectscheme.permanent=true
+
+      # Redirect https://www -> https://apex
+      - traefik.http.routers.landing-www.rule=Host(`www.gehrer-ai.com`)
+      - traefik.http.routers.landing-www.entrypoints=websecure
+      - traefik.http.routers.landing-www.tls=true
+      - traefik.http.routers.landing-www.tls.certresolver=mytlschallenge
+      - traefik.http.routers.landing-www.middlewares=landing-www-redirect
+      - traefik.http.middlewares.landing-www-redirect.redirectregex.regex=^https://www\.gehrer-ai\.com/(.*)
+      - traefik.http.middlewares.landing-www-redirect.redirectregex.replacement=https://gehrer-ai.com/$${1}
+      - traefik.http.middlewares.landing-www-redirect.redirectregex.permanent=true
+
+      # Redirect http://www -> https://apex
+      - traefik.http.routers.landing-www-http.rule=Host(`www.gehrer-ai.com`)
+      - traefik.http.routers.landing-www-http.entrypoints=web
+      - traefik.http.routers.landing-www-http.middlewares=landing-www-http-redirect
+      - traefik.http.middlewares.landing-www-http-redirect.redirectregex.regex=^http://www\.gehrer-ai\.com/(.*)
+      - traefik.http.middlewares.landing-www-http-redirect.redirectregex.replacement=https://gehrer-ai.com/$${1}
+      - traefik.http.middlewares.landing-www-http-redirect.redirectregex.permanent=true
+
       - traefik.http.services.landing.loadbalancer.server.port=80
     networks:
       - shared_proxy_net
